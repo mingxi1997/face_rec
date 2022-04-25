@@ -28,26 +28,24 @@ class Config:
             
             transforms.ToPILImage(),
            
-            transforms.Grayscale(),
 
-            transforms.Resize(128),
+            transforms.Resize(112),
            
             transforms.ToTensor(),
             
-            transforms.Normalize(mean=[0.5], std=[0.225])
+            transforms.Normalize(mean=[0.5], std=[0.5])
 
         ])
 
     test_transform = transforms.Compose([
         
         transforms.ToPILImage(),
-        transforms.Grayscale(),
 
-        transforms.Resize(128),
+        transforms.Resize(112),
       
         transforms.ToTensor(),
         
-        transforms.Normalize(mean=[0.5], std=[0.225])
+        transforms.Normalize(mean=[0.5], std=[0.5])
 
     ])
 

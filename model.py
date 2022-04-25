@@ -76,7 +76,7 @@ class Net(nn.Module):
 
     def __init__(self, embedding_size):
         super().__init__()
-        self.conv1 = ConvBnPrelu(1, 64, kernel=(3, 3), stride=2, padding=1)
+        self.conv1 = ConvBnPrelu(3, 64, kernel=(3, 3), stride=2, padding=1)
         self.conv2 = ConvBn(64, 64, kernel=(3, 3), stride=1, padding=1, groups=64)
         self.conv3 = DepthWise(64, 64, kernel=(3, 3), stride=2, padding=1, groups=128)
         self.conv4 = MultiDepthWiseRes(num_block=4, channels=64, kernel=3, stride=1, padding=1, groups=128)
@@ -87,10 +87,8 @@ class Net(nn.Module):
         self.conv9 = ConvBnPrelu(128, 512, kernel=(1, 1))
         self.conv10 = ConvBn(512, embedding_size, groups=embedding_size, kernel=(7, 7))
         
-        # self.avgpool=nn.AdaptiveAvgPool2d((1,1))
         self.flatten = Flatten()
-        # self.bn = nn.BatchNorm1d(embedding_size)
-        self.linear = nn.Linear(2048, embedding_size, bias=False)
+        self.linear = nn.Linear(512, embedding_size, bias=False)
         self.bn = nn.BatchNorm1d(embedding_size)
         
     def forward(self, x):
@@ -154,3 +152,8 @@ class Arcface(nn.Module):
         output[idx_, label] = cos_theta_m[idx_, label]
         output *= self.s # scale up in order to make softmax work, first introduced in normface
         return output
+    
+    
+    
+    
+

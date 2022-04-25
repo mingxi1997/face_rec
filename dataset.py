@@ -23,7 +23,6 @@ class MYDataset(Dataset):
         img_root=self.images[idx]
         label=self.labels[idx]
         img=cv2.imread(img_root)
-        # img=cv2.resize(img, (224,224))
         img=cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img=Config.train_transform(img)
 
