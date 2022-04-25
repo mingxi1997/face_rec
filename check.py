@@ -1,10 +1,8 @@
 import os
 import os.path as osp
-
 import torch
 import torch.nn as nn
 import numpy as np
-from PIL import Image
 
 from config import Config 
 from model import Net
@@ -38,7 +36,6 @@ def _preprocess(images: list, transform) -> torch.Tensor:
         im = cv2.imread(img)
         im = transform(im)
         res.append(im)
-        # print(im.shape)
     data=torch.stack(res,dim=0)
     # data = torch.cat(res, dim=0)  # shape: (batch, 128, 128)
     # data = data[:, None, :, :]    # shape: (batch, 1, 128, 128)
@@ -101,11 +98,9 @@ def compute_accuracy(feature_dict, pair_list, test_root):
     accuracy, threshold = threshold_search(similarities, labels)
     return accuracy, threshold
 
-if __name__ == '__main__':
 
-    net = Net(512)
-    net.load_state_dict(torch.load('0best.pt'))
-    # model.eval()
+def lfw_test(net):
+    net.eval()
 
     images = unique_image(Config.test_list)
     images = [osp.join(Config.test_root, img) for img in images]
@@ -121,7 +116,12 @@ if __name__ == '__main__':
         f"Accuracy: {accuracy:.3f}\n"
         f"Threshold: {threshold:.3f}\n"
     )
+    
+if __name__ == '__main__':
 
+    net = Net(512)
+    net = nn.DataParallel(net)
+    net.load_state_dict(torch.load('{}best.pt'.format(99)))
 
-
+    lfw_test(net)
 
