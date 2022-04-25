@@ -65,6 +65,7 @@ for epoch in range(Config.num_epochs):
     
     num_step=len(train_loader)
     for step, (x, y) in enumerate(train_loader):
+            net.train()
 
             train_loss=[]
             train_acc=[]
