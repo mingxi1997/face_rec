@@ -1,7 +1,5 @@
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
-import os
-from sklearn.preprocessing import LabelEncoder
 from config import Config
 import cv2
 
@@ -27,6 +25,3 @@ class MYDataset(Dataset):
         img=Config.train_transform(img)
 
         return img,label
-# mydataset=    MYDataset()
-# for m,i in mydataset:
-#     print(m.shape)
