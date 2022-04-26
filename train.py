@@ -48,20 +48,25 @@ focalloss=FocalLoss()
 optimizer =torch.optim.SGD([{'params': net.parameters()}, {'params': arc_margin.parameters()}], 
                             lr=Config.base_lr, weight_decay=Config.weight_decay)
 
-warm_up_iter = int(Config.num_epochs*0.1)
-T_max = Config.num_epochs
-lr_max = Config.base_lr	
-lr_min = 1e-5
-
-lambda0 = lambda cur_iter: cur_iter / warm_up_iter if  cur_iter < warm_up_iter else \
-        (lr_min + 0.5*(lr_max-lr_min)*(1.0+math.cos( (cur_iter-warm_up_iter)/(T_max-warm_up_iter)*math.pi)))/0.1
 
 
-scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda0)
+
+# warm_up_iter = int(Config.num_epochs*0.1)
+# T_max = Config.num_epochs
+# lr_max = Config.base_lr	
+# lr_min = 1e-5
+
+# lambda0 = lambda cur_iter: cur_iter / warm_up_iter if  cur_iter < warm_up_iter else \
+#         (lr_min + 0.5*(lr_max-lr_min)*(1.0+math.cos( (cur_iter-warm_up_iter)/(T_max-warm_up_iter)*math.pi)))/0.1
+
+
+# scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda0)
+
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.1)
+
+
 
 for epoch in range(Config.num_epochs):
-    
-    
     
     num_step=len(train_loader)
     for step, (x, y) in enumerate(train_loader):
@@ -76,7 +81,7 @@ for epoch in range(Config.num_epochs):
             m=arc_margin(ys,y)
             loss= focalloss(m, y)
             if Config.multi_gpu==True:
-               loss=loss.mean()
+                loss=loss.mean()
             
             iter_loss = loss.item()
 
@@ -96,7 +101,8 @@ for epoch in range(Config.num_epochs):
                 print ('Epoch {}/{}, Step {}/{},  Training Loss: {:.3f}'
                             .format(epoch+1,Config.num_epochs, step,num_step, sum(train_loss)/len(train_loss)) )  
                 lfw_test(net)
-        
+                
+
     scheduler.step()
 
     torch.save(net.state_dict(), './save_emb/{}best.pt'.format(epoch))

@@ -2,7 +2,7 @@ import torchvision.transforms as transforms
 from sklearn.preprocessing import LabelEncoder
 import os
 le = LabelEncoder()
-root_images="/home/xu/XU/casia-maxpy-clean/CASIA-maxpy-clean/"
+root_images="/home/xu/MyData/casia-maxpy-clean/CASIA-maxpy-clean/"
 images=[]
 labels=[]
 dirs=[root_images+d+'/' for d in os.listdir(root_images)]
@@ -14,8 +14,8 @@ for img in images:
 labels=le.fit_transform(labels)
     
 class Config:
-    test_list = "/home/xu/XU/lfw/lfw_test_pair.txt"
-    test_root = "/home/xu/XU/lfw/lfw-align-128"
+    test_list = "/home/xu/MyData/lfw/lfw_test_pair.txt"
+    test_root = "/home/xu/MyData/lfw/lfw-align-128"
     device = 'cuda'
     train_batch_size=128
     
@@ -49,5 +49,5 @@ class Config:
     embedding_size=512
     base_lr=1e-1
     weight_decay=5e-4
-    multi_gpu=True
+    multi_gpu=False
 
