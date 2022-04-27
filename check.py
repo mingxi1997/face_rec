@@ -116,12 +116,13 @@ def lfw_test(net):
         f"Accuracy: {accuracy:.3f}\n"
         f"Threshold: {threshold:.3f}\n"
     )
+    return accuracy
     
-if __name__ == '__main__':
+# if __name__ == '__main__':
 
-    net = Net(512)
-    net = nn.DataParallel(net)
-    net.load_state_dict(torch.load('{}best.pt'.format(99)))
+#     net = Net(512)
+#     net = nn.DataParallel(net)
+#     net.load_state_dict(torch.load('{}best.pt'.format(99)))
 
-    lfw_test(net)
+#     lfw_test(net)
 

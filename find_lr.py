@@ -1,7 +1,7 @@
 import os
 import torch
 import torch.nn as nn
-from model import Net,ArcMarginProduct
+from model import Net,Arcface
 from dataset import MYDataset
 from config import Config
 import math
@@ -30,19 +30,18 @@ my_data=MYDataset()
 device=torch.device('cuda')
 
 
-from models import resnet18
 
-# net=Net(Config.embedding_size).cuda()
-net=resnet18().cuda()
 
-arc_margin=ArcMarginProduct(Config.embedding_size,len(Config.dirs)).cuda()
+net=Net(Config.embedding_size).cuda()
+
+arc_margin=Arcface(Config.embedding_size,len(Config.dirs)).cuda()
 
 if Config.multi_gpu==True:
     net = nn.DataParallel(net)
     arc_margin=nn.DataParallel(arc_margin)
-# if Config.load:
-#     net.load_state_dict(torch.load( './save_emb/13best.pt'))
-#     arc_margin.load_state_dict(torch.load('./save_arc/13best.pt'))
+if Config.load:
+    net.load_state_dict(torch.load( './save_emb/13best.pt'))
+    arc_margin.load_state_dict(torch.load('./save_arc/13best.pt'))
 
 train_loader=torch.utils.data.DataLoader(my_data,shuffle=True,batch_size=Config.train_batch_size,num_workers=16,pin_memory=True)
 
@@ -57,7 +56,7 @@ import torch.nn.functional as F
 import math
 from tqdm import tqdm
 
-def find_lr(init_value = 1e-5, final_value=1000., beta = 0.98):
+def find_lr(init_value = 1e-3, final_value=1000., beta = 0.98):
     num = len(train_loader)-1
     mult = (final_value / init_value) ** (1/num)
     lr = init_value

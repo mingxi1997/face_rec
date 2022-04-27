@@ -1,7 +1,5 @@
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
-import os
-from sklearn.preprocessing import LabelEncoder
 from config import Config
 import cv2
 
@@ -23,8 +21,7 @@ class MYDataset(Dataset):
         img_root=self.images[idx]
         label=self.labels[idx]
         img=cv2.imread(img_root)
-        # img=cv2.resize(img, (224,224))
-        # img=cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img=Config.train_data_transform(img)
+        img=cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img=Config.train_transform(img)
 
         return img,label

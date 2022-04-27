@@ -3,6 +3,10 @@ import torchvision.models as models
 import torch
 import math
 import torch.nn.functional as F
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
 class Flatten(nn.Module):
     def forward(self, x):
         return x.view(x.shape[0], -1)
@@ -72,7 +76,7 @@ class Net(nn.Module):
 
     def __init__(self, embedding_size):
         super().__init__()
-        self.conv1 = ConvBnPrelu(1, 64, kernel=(3, 3), stride=2, padding=1)
+        self.conv1 = ConvBnPrelu(3, 64, kernel=(3, 3), stride=2, padding=1)
         self.conv2 = ConvBn(64, 64, kernel=(3, 3), stride=1, padding=1, groups=64)
         self.conv3 = DepthWise(64, 64, kernel=(3, 3), stride=2, padding=1, groups=128)
         self.conv4 = MultiDepthWiseRes(num_block=4, channels=64, kernel=3, stride=1, padding=1, groups=128)
@@ -81,9 +85,10 @@ class Net(nn.Module):
         self.conv7 = DepthWise(128, 128, kernel=(3, 3), stride=2, padding=1, groups=512)
         self.conv8 = MultiDepthWiseRes(num_block=2, channels=128, kernel=(3, 3), stride=1, padding=1, groups=256)
         self.conv9 = ConvBnPrelu(128, 512, kernel=(1, 1))
-        self.conv10 = ConvBn(512, 512, groups=512, kernel=(7, 7))
+        self.conv10 = ConvBn(512, embedding_size, groups=embedding_size, kernel=(7, 7))
+        
         self.flatten = Flatten()
-        self.linear = nn.Linear(2048, embedding_size, bias=False)
+        self.linear = nn.Linear(512, embedding_size, bias=False)
         self.bn = nn.BatchNorm1d(embedding_size)
         
     def forward(self, x):
@@ -97,20 +102,23 @@ class Net(nn.Module):
         out = self.conv8(out)
         out = self.conv9(out)
         out = self.conv10(out)
+        # out = self.avgpool(out)
         out = self.flatten(out)
-        out = self.linear(out)
+        out=self.linear(out)
         out = self.bn(out)
         return out
 
-def l2_norm(input,axis=1):
-    norm = torch.norm(input,2,axis,True)
-    output = torch.div(input, norm)
-    return output    
+# # net=Net(512)
+# # y=net(torch.randn(1,1,128,128))
+# def l2_norm(input,axis=1):
+#     norm = torch.norm(input,2,axis,True)
+#     output = torch.div(input, norm)
+#     return output    
 
-# class ArcMarginProduct(nn.Module):
+# class Arcface(nn.Module):
 #     # implementation of additive margin softmax loss in https://arxiv.org/abs/1801.05599    
 #     def __init__(self, embedding_size, classnum,  s=30., m=0.5):
-#         super().__init__()
+#         super(Arcface, self).__init__()
 #         self.classnum = classnum
 #         self.kernel = nn.Parameter(torch.Tensor(embedding_size,classnum))
 #         # initial kernel
@@ -145,8 +153,7 @@ def l2_norm(input,axis=1):
 #         output[idx_, label] = cos_theta_m[idx_, label]
 #         output *= self.s # scale up in order to make softmax work, first introduced in normface
 #         return output
-
-class ArcMarginProduct(nn.Module):
+class Arcface(nn.Module):
     r"""Implement of large margin arc distance: :
         Args:
             in_features: size of each input sample
@@ -156,7 +163,7 @@ class ArcMarginProduct(nn.Module):
             cos(theta + m)
         """
     def __init__(self, in_features, out_features, s=30.0, m=0.50, easy_margin=False, ls_eps=0.0):
-        super(ArcMarginProduct, self).__init__()
+        super().__init__()
         self.in_features = in_features
         self.out_features = out_features
         self.s = s
@@ -196,4 +203,8 @@ class ArcMarginProduct(nn.Module):
         output = (one_hot * phi) + ((1.0 - one_hot) * cosine)
         output *= self.s
 
-        return output
+        return output    
+    
+    
+    
+
