@@ -1,7 +1,7 @@
 import os
 import torch
 import torch.nn as nn
-from model import Net,Arcface
+from model import Net,ArcMarginProduct
 from dataset import MYDataset
 from config import Config
 import math
@@ -30,16 +30,19 @@ my_data=MYDataset()
 device=torch.device('cuda')
 
 
+from models import resnet18
 
+# net=Net(Config.embedding_size).cuda()
+net=resnet18().cuda()
 
-net=Net(Config.embedding_size).cuda()
-
-arc_margin=Arcface(Config.embedding_size,len(Config.dirs)).cuda()
+arc_margin=ArcMarginProduct(Config.embedding_size,len(Config.dirs)).cuda()
 
 if Config.multi_gpu==True:
     net = nn.DataParallel(net)
     arc_margin=nn.DataParallel(arc_margin)
-
+# if Config.load:
+#     net.load_state_dict(torch.load( './save_emb/13best.pt'))
+#     arc_margin.load_state_dict(torch.load('./save_arc/13best.pt'))
 
 train_loader=torch.utils.data.DataLoader(my_data,shuffle=True,batch_size=Config.train_batch_size,num_workers=16,pin_memory=True)
 
@@ -54,7 +57,7 @@ import torch.nn.functional as F
 import math
 from tqdm import tqdm
 
-def find_lr(init_value = 1e-8, final_value=10., beta = 0.98):
+def find_lr(init_value = 1e-5, final_value=1000., beta = 0.98):
     num = len(train_loader)-1
     mult = (final_value / init_value) ** (1/num)
     lr = init_value
@@ -75,15 +78,8 @@ def find_lr(init_value = 1e-8, final_value=10., beta = 0.98):
         ys = net(inputs) 
         
         m=arc_margin(ys,labels)
-        loss= focalloss(m, labels)
-
-        
-        
-        
-        
-        
-        
-        
+        loss= nn.CrossEntropyLoss()(m, labels)
+ 
         # outputs = net(inputs)
         # loss = F.nll_loss(outputs, labels)
         #Compute the smoothed loss
@@ -106,13 +102,13 @@ def find_lr(init_value = 1e-8, final_value=10., beta = 0.98):
         optimizer.param_groups[0]['lr'] = lr
     return log_lrs, losses
 
-
-import matplotlib.pyplot as plt
-
-
-logs,losses = find_lr()
-plt.plot(logs[10:-5],losses[10:-5])
-
+if __name__ == '__main__':
+    import matplotlib.pyplot as plt
+    
+    
+    logs,losses = find_lr()
+    plt.plot(logs[10:-5],losses[10:-5])
+    
 
 
 
